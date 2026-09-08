@@ -1,14 +1,16 @@
 // Displays the current time and date on a round GC9A01 SPI TFT display,
 // synced from an NTP server over WiFi.
 //
-// Board:   any ESP32 dev board
+// Board:   ESP32-C3 SuperMini
 // Display: GC9A01 240x240 round SPI TFT
 // Library: "GFX Library for Arduino" by moononournation (Arduino_GFX_Library)
 //          Install via Library Manager, then also install its "Arduino_BusIO"
 //          dependency if prompted.
 //
 // Wire the display to the pins defined below (or edit them to match your
-// wiring), fill in your WiFi credentials, and upload.
+// wiring), fill in your WiFi credentials, and upload. The pins below avoid
+// the C3 SuperMini's strapping pins (GPIO8, GPIO9) and its USB/serial pins
+// (GPIO18, GPIO19, GPIO20, GPIO21).
 
 #include <Arduino_GFX_Library.h>
 #include <WiFi.h>
@@ -25,12 +27,12 @@ const long GMT_OFFSET_SEC = 1 * 3600;
 const int DAYLIGHT_OFFSET_SEC = 1 * 3600;
 
 // ---- GC9A01 pin wiring (edit to match your board) ----
-const int PIN_TFT_CS = 5;
+const int PIN_TFT_CS = 7;
 const int PIN_TFT_DC = 2;
-const int PIN_TFT_RST = 4;
-const int PIN_TFT_SCK = 18;
-const int PIN_TFT_MOSI = 23;
-const int PIN_TFT_BL = 15;  // backlight, -1 if not connected
+const int PIN_TFT_RST = 10;
+const int PIN_TFT_SCK = 4;
+const int PIN_TFT_MOSI = 6;
+const int PIN_TFT_BL = 3;  // backlight, -1 if not connected
 
 Arduino_DataBus *bus = new Arduino_ESP32SPI(PIN_TFT_DC, PIN_TFT_CS, PIN_TFT_SCK, PIN_TFT_MOSI, GFX_NOT_DEFINED);
 Arduino_GFX *gfx = new Arduino_GC9A01(bus, PIN_TFT_RST, 0 /* rotation */, true /* IPS */);
