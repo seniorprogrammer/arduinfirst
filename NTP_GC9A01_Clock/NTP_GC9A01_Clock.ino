@@ -3,16 +3,16 @@
 //
 // Board:   ESP32-C3 SuperMini
 // Display: GC9A01 240x240 round SPI TFT
-// Library: "GFX Library for Arduino" by moononournation (Arduino_GFX_Library)
-//          Install via Library Manager, then also install its "Arduino_BusIO"
-//          dependency if prompted.
+// Libraries: "Adafruit GC9A01A" and its dependencies "Adafruit GFX Library"
+//            and "Adafruit BusIO" — install all three via Library Manager.
 //
 // Wire the display to the pins defined below (or edit them to match your
 // wiring), fill in your WiFi credentials, and upload. The pins below avoid
 // the C3 SuperMini's strapping pins (GPIO8, GPIO9) and its USB/serial pins
 // (GPIO18, GPIO19, GPIO20, GPIO21).
 
-#include <Arduino_GFX_Library.h>
+#include <Adafruit_GC9A01A.h>
+#include <SPI.h>
 #include <WiFi.h>
 #include <time.h>
 
@@ -34,8 +34,7 @@ const int PIN_TFT_SCK = 4;
 const int PIN_TFT_MOSI = 6;
 const int PIN_TFT_BL = 3;  // backlight, -1 if not connected
 
-Arduino_DataBus *bus = new Arduino_ESP32SPI(PIN_TFT_DC, PIN_TFT_CS, PIN_TFT_SCK, PIN_TFT_MOSI, GFX_NOT_DEFINED);
-Arduino_GFX *gfx = new Arduino_GC9A01(bus, PIN_TFT_RST, 0 /* rotation */, true /* IPS */);
+Adafruit_GC9A01A gfx(&SPI, PIN_TFT_DC, PIN_TFT_CS, PIN_TFT_RST);
 
 const int SCREEN_SIZE = 240;
 const int CENTER = SCREEN_SIZE / 2;
@@ -47,10 +46,10 @@ void connectWiFi() {
   WiFi.mode(WIFI_STA);
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 
-  gfx->setTextColor(WHITE);
-  gfx->setTextSize(2);
-  gfx->setCursor(CENTER - 60, CENTER - 10);
-  gfx->print("Connecting WiFi...");
+  gfx.setTextColor(GC9A01A_WHITE);
+  gfx.setTextSize(2);
+  gfx.setCursor(CENTER - 60, CENTER - 10);
+  gfx.print("Connecting WiFi...");
 
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
@@ -61,11 +60,11 @@ void syncTime() {
   configTime(GMT_OFFSET_SEC, DAYLIGHT_OFFSET_SEC, NTP_SERVER);
 
   struct tm timeinfo;
-  gfx->fillScreen(BLACK);
-  gfx->setTextColor(WHITE);
-  gfx->setTextSize(2);
-  gfx->setCursor(CENTER - 55, CENTER - 10);
-  gfx->print("Syncing time...");
+  gfx.fillScreen(GC9A01A_BLACK);
+  gfx.setTextColor(GC9A01A_WHITE);
+  gfx.setTextSize(2);
+  gfx.setCursor(CENTER - 55, CENTER - 10);
+  gfx.print("Syncing time...");
 
   while (!getLocalTime(&timeinfo)) {
     delay(500);
@@ -73,8 +72,11 @@ void syncTime() {
 }
 
 void setup() {
-  gfx->begin();
-  gfx->fillScreen(BLACK);
+  SPI.begin(PIN_TFT_SCK, -1 /* MISO unused */, PIN_TFT_MOSI, PIN_TFT_CS);
+
+  gfx.begin();
+  gfx.setRotation(0);
+  gfx.fillScreen(GC9A01A_BLACK);
 
   if (PIN_TFT_BL >= 0) {
     pinMode(PIN_TFT_BL, OUTPUT);
@@ -83,17 +85,17 @@ void setup() {
 
   connectWiFi();
   syncTime();
-  gfx->fillScreen(BLACK);
+  gfx.fillScreen(GC9A01A_BLACK);
 }
 
 void drawCentered(const char *text, int y, int textSize, uint16_t color) {
   int16_t x1, y1;
   uint16_t w, h;
-  gfx->setTextSize(textSize);
-  gfx->getTextBounds(text, 0, 0, &x1, &y1, &w, &h);
-  gfx->setCursor(CENTER - w / 2, y);
-  gfx->setTextColor(color, BLACK);
-  gfx->print(text);
+  gfx.setTextSize(textSize);
+  gfx.getTextBounds(text, 0, 0, &x1, &y1, &w, &h);
+  gfx.setCursor(CENTER - w / 2, y);
+  gfx.setTextColor(color, GC9A01A_BLACK);
+  gfx.print(text);
 }
 
 void loop() {
@@ -105,12 +107,12 @@ void loop() {
     strftime(dateStr, sizeof(dateStr), "%A, %d %B %Y", &timeinfo);
 
     if (strcmp(timeStr, lastTimeStr) != 0) {
-      drawCentered(timeStr, CENTER - 20, 4, WHITE);
+      drawCentered(timeStr, CENTER - 20, 4, GC9A01A_WHITE);
       strcpy(lastTimeStr, timeStr);
     }
 
     if (strcmp(dateStr, lastDateStr) != 0) {
-      drawCentered(dateStr, CENTER + 30, 1, CYAN);
+      drawCentered(dateStr, CENTER + 30, 1, GC9A01A_CYAN);
       strcpy(lastDateStr, dateStr);
     }
   }
