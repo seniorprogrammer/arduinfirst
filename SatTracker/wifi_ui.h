@@ -22,7 +22,7 @@ void show_wifi_setup_screen();
 static void connect_btn_cb(lv_event_t *e) {
   const char *pass = lv_textarea_get_text(pass_ta);
   lv_label_set_text(status_label, "Csatlakozas...");
-  lv_timer_handler(); // az üzenet azonnal megjelenjen
+  lv_timer_handler(); // status label frissuljon a kepernyon azonnal
 
   WiFi.begin(selected_ssid.c_str(), pass);
 
@@ -130,7 +130,7 @@ void show_main_screen() {
 
   clock_label = lv_label_create(scr_main);
   lv_obj_align(clock_label, LV_ALIGN_CENTER, 0, 0);
-  lv_obj_set_style_text_font(clock_label, &lv_font_montserrat_24, 0);
+  lv_obj_set_style_text_font(clock_label, &lv_font_montserrat_14, 0);
   lv_label_set_text(clock_label, "Ido szinkronizalasa...");
 
   lv_obj_t *next_label = lv_label_create(scr_main);
@@ -139,7 +139,7 @@ void show_main_screen() {
 
   lv_timer_create(clock_timer_cb, 1000, NULL);
 
-  configTime(0, 0, NTP_SERVER1, NTP_SERVER2); // UTC-ben szinkronizál, mert a palyaszamitas UTC-t igenyel
+  configTime(0, 0, NTP_SERVER1, NTP_SERVER2); // UTC-ben szinkronizal, mert a palyaszamitas UTC-t igenyel
 
   lv_scr_load(scr_main);
 }
