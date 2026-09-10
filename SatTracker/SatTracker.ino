@@ -3,15 +3,13 @@
 #include "display_lvgl.h"
 #include "wifi_ui.h"
 
-// Ehhez a sketch-hez az lv_conf.h-ban LV_TICK_CUSTOM legyen 0 -
-// igy az lv_tick_inc()-et mi magunk hivjuk meg a loop()-ban.
-static uint32_t last_tick;
+// Az Arduino-s lvgl konyvtar lv_conf.h sablonja alapbol LV_TICK_CUSTOM 1-et
+// hasznal, es a millis()-t automatikusan bedrotozza (LV_TICK_CUSTOM_SYS_TIME_EXPR).
+// Emiatt nincs szukseg kezi lv_tick_inc()/lv_tick_set_cb() hivasra.
 
 void setup() {
   Serial.begin(115200);
   display_init();
-
-  last_tick = millis();
 
   if (wifi_try_autoconnect()) {
     show_main_screen();
@@ -21,10 +19,6 @@ void setup() {
 }
 
 void loop() {
-  uint32_t now = millis();
-  lv_tick_inc(now - last_tick);
-  last_tick = now;
-
   lv_timer_handler();
   delay(5);
 }
